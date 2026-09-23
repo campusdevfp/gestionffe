@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block titulo %}Alta de alumnado{% endblock %}
+{% block contenido %}
+<div style="max-width:560px;margin:0 auto">
+  <h1>Date de alta en tu curso</h1>
+  <p class="sub">Necesitas el código que te da tu tutor FFE. Te registrarás solo en ese curso. ¿Ya tienes usuario? <a href="{% url 'cuentas:login' %}">Entra aquí</a>.</p>
+  <form method="post" class="formulario bloque" style="max-width:none">
+    {% csrf_token %}
+    {% for f in form %}{% if f.name != "informado" %}{{ f.as_field_group }}{% endif %}{% endfor %}
+    <div class="acepto">{{ form.informado.as_field_group }}</div>
+    <p class="apunte">Tus datos los trata {{ responsable.nombre }} para gestionar tus prácticas.
+      <a href="{% url 'privacidad' %}" target="_blank">Lee la información completa</a>.</p>
+    <button class="btn" type="submit">Crear mi cuenta</button>
+  </form>
+</div>
+{% endblock %}

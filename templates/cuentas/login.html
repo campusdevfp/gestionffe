@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block titulo %}Entrar · Prácticas en empresa{% endblock %}
+{% block contenido %}
+<div class="acceso">
+  <h1>Prácticas en empresa</h1>
+  <form method="post" class="formulario bloque">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<ul class="errorlist nonfield"><li>Usuario o contraseña incorrectos.</li></ul>{% endif %}
+    <div><label for="id_username">Usuario</label>{{ form.username }}<span class="helptext">El alumnado entra con su DNI.</span></div>
+    <div><label for="id_password">Contraseña</label>{{ form.password }}</div>
+    <button class="btn" type="submit">Entrar</button>
+  </form>
+  <section class="bloque" style="margin-top:1rem">
+    <h3>¿Has olvidado la contraseña?</h3>
+    <p class="apunte" style="margin:0">La aplicación no envía correos: pídele una contraseña nueva a quien te dio el
+      acceso. El alumnado y las empresas, a su tutor FFE; el profesorado, a la administración del centro.</p>
+  </section>
+  <p class="sub" style="margin-top:1rem">¿Eres alumno y aún no tienes cuenta? <a href="{% url 'alumno:registro' %}">Date de alta con el código de tu curso</a>.<br>
+    ¿Eres una empresa? <a href="{% url 'empresa:registro' %}">Da de alta tu empresa</a>.</p>
+</div>
+{% endblock %}

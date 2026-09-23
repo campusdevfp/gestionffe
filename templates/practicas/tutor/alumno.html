@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block contenido %}
+<div class="cabecera">
+  <div><h1>{{ alumno.nombre_completo }}</h1>
+    <p class="sub">{{ alumno.curso }} · tutor FFE {{ alumno.curso.tutor.nombre_completo }} ·
+      <a href="{% url 'tutor:alumnos' alumno.curso.pk %}">Volver al curso</a></p></div>
+  {% if alumno.practicas %}<span class="estado seleccionado">En prácticas · {{ alumno.practicas.proceso.empresa }}</span>
+  {% else %}<span class="estado pendiente">Sin plaza</span>{% endif %}
+</div>
+
+<div class="dos">
+  <div>
+    <h2 style="margin-top:0">Currículum y comentarios</h2>
+    <section class="bloque">
+      {% if alumno.cv %}
+        <p style="margin:0 0 1rem">Subido el {{ alumno.cv_actualizado|date:"d/m/Y" }}.
+          <a href="{% url 'cv' alumno.pk %}">Descargar CV</a></p>
+      {% else %}
+        <p class="apunte" style="margin:0 0 1rem">Todavía no ha subido currículum.</p>
+      {% endif %}
+
+      {% for c in comentarios %}
+        <div class="comentario">
+          <p style="margin:0 0 .25rem">{{ c.texto|linebreaksbr }}</p>
+          <div class="meta">{{ c.tutor|default:"—" }} · {{ c.fecha|date:"d/m/Y H:i" }}
+            {% if gestiono and c.tutor_id == user.tutor_ffe.pk %}
+            <form class="en-linea" method="post" action="{% url 'tutor:borrar_comentario' alumno.pk c.pk %}" onsubmit="return confirm('¿Eliminar este comentario?')">{% csrf_token %}<button class="btn peligro peq" type="submit">Eliminar</button></form>
+            {% endif %}
+          </div>
+        </div>
+      {% empty %}
+        <p class="apunte">Sin comentarios sobre su currículum.</p>
+      {% endfor %}
+
+      {% if form_comentario %}
+      <form method="post" action="{% url 'tutor:comentar_cv' alumno.pk %}" style="margin-top:1rem">
+        {% csrf_token %}{{ form_comentario.texto.as_field_group }}
+        <button class="btn" type="submit">Guardar comentario</button>
+        <span class="helptext">El alumno verá el comentario en su panel. Las empresas no acceden a estos comentarios.</span>
+      </form>
+      {% endif %}
+    </section>
+
+    <h2>Procesos</h2>
+    <div class="tabla-env"><table>
+      <thead><tr><th>Empresa</th><th>Puesto</th><th>Estado</th><th>Resultado</th></tr></thead>
+      <tbody>
+      {% for p in participaciones %}
+        <tr><td><a href="{% url 'tutor:proceso' p.proceso.pk %}">{{ p.proceso.empresa }}</a></td><td>{{ p.proceso.puesto }}</td>
+          <td><span class="estado {{ p.proceso.estado|lower }}">{{ p.proceso.get_estado_display }}</span></td>
+          <td><span class="estado {{ p.resultado|lower }}">{{ p.get_resultado_display }}</span></td></tr>
+      {% empty %}<tr><td colspan="4" class="vacio">No participa en ningún proceso.</td></tr>{% endfor %}
+      </tbody>
+    </table></div>
+  </div>
+
+  <aside>
+    <section class="bloque">
+      <h3>Datos de contacto</h3>
+      <dl class="datos"><dt>DNI</dt><dd>{{ alumno.dni }}</dd><dt>Email</dt><dd>{{ alumno.email }}</dd>
+        <dt>Teléfono</dt><dd>{{ alumno.telefono|default:"—" }}</dd><dt>Alta</dt><dd>{{ alumno.alta|date:"d/m/Y" }}</dd></dl>
+    </section>
+
+    <section class="bloque" style="margin-top:1rem">
+      <h3>Cupo de horas</h3>
+      <dl class="datos">
+        <dt>Debe realizar</dt><dd>{{ alumno.horas_requeridas }} h</dd>
+        <dt>Exentas</dt><dd>{{ alumno.horas_exentas }} h</dd>
+        <dt>Comprometidas</dt><dd>{{ alumno.horas_comprometidas }} h</dd>
+        <dt>Pendientes</dt><dd><strong>{{ alumno.horas_pendientes }} h</strong></dd>
+        <dt>Jornada</dt><dd>{{ alumno.jornada_preferida_display|default:"Sin indicar" }}</dd>
+        <dt>Disponibilidad</dt><dd>{{ alumno.disponibilidad|default:"Sin indicar" }}</dd>
+      </dl>
+      {% if form_horas %}
+      <form method="post" action="{% url 'tutor:horas_alumno' alumno.pk %}" style="margin-top:1rem">
+        {% csrf_token %}{{ form_horas }}
+        <button class="btn sec peq" type="submit">Guardar horas</button>
+        <span class="helptext">La jornada y la disponibilidad las indica el propio alumno en su perfil.</span>
+      </form>
+      {% endif %}
+    </section>
+    {% if gestiono %}
+    <section class="bloque" style="margin-top:1rem">
+      <h3>Acceso a la aplicación</h3>
+      <p class="apunte" style="margin:0 0 .75rem">Entra con su DNI ({{ alumno.dni }}) como usuario.
+        {% if alumno.usuario.debe_cambiar_password %}Tiene una contraseña inicial pendiente de cambiar.{% endif %}</p>
+      <form method="post" action="{% url 'tutor:restablecer_alumno' alumno.pk %}" onsubmit="return confirm('¿Generar una contraseña nueva? La anterior dejará de funcionar.')">
+        {% csrf_token %}<button class="btn sec peq" type="submit">Restablecer contraseña</button>
+      </form>
+    </section>
+    {% endif %}
+
+    <section class="bloque" style="margin-top:1rem">
+      <h3>Accesos a su currículum</h3>
+      {% for a in accesos %}
+        <div class="apunte" style="padding:.3rem 0;border-bottom:1px solid var(--linea)">{{ a.fecha|date:"d/m/Y H:i" }} · {{ a.descripcion }}</div>
+      {% empty %}<p class="apunte" style="margin:0">Nadie lo ha descargado todavía.</p>{% endfor %}
+      <p class="helptext" style="margin-top:.75rem">Registro de seguridad exigible por el RGPD; el alumno puede consultarlo.</p>
+    </section>
+  </aside>
+</div>
+{% endblock %}

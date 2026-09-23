@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ titulo }}</h1>
+<div class="banda">Esta contraseña solo se muestra ahora. Entrégala por un canal seguro; habrá que cambiarla en el primer acceso.</div>
+<section class="bloque" style="max-width:520px">
+  <dl class="datos"><dt>Usuario</dt><dd><span class="clave">{{ usuario }}</span></dd><dt>Contraseña inicial</dt><dd><span class="clave">{{ password }}</span></dd></dl>
+</section>
+<p><a class="btn" href="{{ volver }}">Continuar</a></p>
+{% endblock %}

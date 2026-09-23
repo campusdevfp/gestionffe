@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block contenido %}
+<div class="cabecera">
+  <div><h1>Empresas</h1><p class="sub">Comunes a todos los cursos: cualquier tutor puede abrir procesos con ellas.</p></div>
+  <div class="acciones">
+    <a class="btn sec" href="{% url 'tutor:descargar_informe' 'empresas' 'xlsx' %}">Excel</a>
+    <a class="btn sec" href="{% url 'tutor:importar_empresas' %}">Importar CSV</a>
+    <a class="btn" href="{% url 'tutor:nueva_empresa' %}">Nueva empresa</a>
+  </div>
+</div>
+<form method="get" class="buscador" style="margin-bottom:1rem">
+  <input type="search" name="q" value="{{ q }}" placeholder="Nombre, CIF o persona de contacto" aria-label="Buscar empresa">
+  <button class="btn sec" type="submit">Buscar</button>
+</form>
+<div class="tabla-env"><table>
+  <thead><tr><th>Empresa</th><th>Contacto</th><th>Tutores laborales</th><th>Procesos</th><th>Último seguimiento</th></tr></thead>
+  <tbody>
+  {% for e in empresas %}
+    <tr>
+      <td><a href="{% url 'tutor:empresa' e.pk %}">{{ e.nombre }}</a><br><small style="color:var(--tinta-suave)">{{ e.cif }}</small></td>
+      <td>{{ e.persona_contacto }}<br><small>{{ e.telefono }}</small></td>
+      <td>{{ e.n_tutores }}</td>
+      <td>{{ e.n_procesos }}{% if e.n_abiertos %} <small>({{ e.n_abiertos }} en marcha)</small>{% endif %}</td>
+      <td>{% with u=e.seguimientos.all|first %}{% if u %}{{ u.fecha_hora|date:"d/m/Y" }}{% else %}Nunca{% endif %}{% endwith %}</td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="5" class="vacio">{% if q %}Ninguna empresa coincide con «{{ q }}».{% else %}Todavía no hay empresas.{% endif %}</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

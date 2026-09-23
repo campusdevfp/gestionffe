@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block contenido %}
+<div class="cabecera">
+  <div><h1>Alumnado de {{ curso.nombre }}</h1>
+    <p class="sub">{{ alumnos|length }} alumno{{ alumnos|length|pluralize }} · código de autorregistro <span class="clave">{{ curso.codigo_matricula }}</span>
+      {% if curso.autorregistro %}<span class="estado abierto">abierto</span>{% else %}<span class="estado cerrado">cerrado</span>{% endif %}</p></div>
+  <div class="acciones">
+    <a class="btn sec" href="{% url 'tutor:importar_alumnos' %}?curso={{ curso.pk }}">Importar CSV</a>
+    <a class="btn" href="{% url 'tutor:alta_alumno' %}?curso={{ curso.pk }}">Alta manual</a>
+  </div>
+</div>
+<div class="tabla-env"><table>
+  <thead><tr><th>Alumno</th><th>DNI</th><th>Contacto</th><th>CV</th><th>Horas pendientes</th><th>Procesos</th><th>Situación</th><th>Acceso</th></tr></thead>
+  <tbody>
+  {% for a in alumnos %}
+    <tr>
+      <td><a href="{% url 'tutor:alumno' a.pk %}">{{ a.apellidos }}, {{ a.nombre }}</a></td>
+      <td>{{ a.dni }}</td>
+      <td>{{ a.email }}{% if a.telefono %}<br><small class="apunte">{{ a.telefono }}</small>{% endif %}</td>
+      <td>{% if a.cv %}<a href="{% url 'cv' a.pk %}">Descargar</a>{% else %}<span style="color:var(--tinta-suave)">Sin subir</span>{% endif %}</td>
+      <td>{{ a.horas_pendientes }} h<br><small class="apunte">de {{ a.horas_requeridas }} h</small></td>
+      <td>{% for p in a.participaciones.all %}<a href="{% url 'tutor:proceso' p.proceso.pk %}">{{ p.proceso.empresa }}</a> <small>({{ p.get_resultado_display|lower }})</small>{% if not forloop.last %}<br>{% endif %}{% empty %}—{% endfor %}</td>
+      <td>{% if a.practicas %}<span class="estado seleccionado">En {{ a.practicas.proceso.empresa }}</span>{% else %}<span class="estado pendiente">Sin plaza</span>{% endif %}</td>
+      <td><form method="post" action="{% url 'tutor:restablecer_alumno' a.pk %}" onsubmit="return confirm('¿Generar una contraseña nueva para {{ a.nombre_completo|escapejs }}?')">{% csrf_token %}<button class="btn sec peq" type="submit">Nueva contraseña</button></form></td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="8" class="vacio">Sin alumnado. <a href="{% url 'tutor:importar_alumnos' %}?curso={{ curso.pk }}">Importa el CSV de la clase</a> o dales el código de autorregistro.</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

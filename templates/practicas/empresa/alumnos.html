@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>Alumnado</h1>
+<p class="sub">Alumnado que participa en tus procesos. Para ver sus datos de contacto antes de seleccionarlo, pídelo a su tutor FFE.</p>
+<div class="tabla-env"><table>
+  <thead><tr><th>Alumno</th><th>Curso</th><th>Horas pendientes</th><th>Disponibilidad</th><th>Currículum</th><th>Contacto</th></tr></thead>
+  <tbody>
+  {% for a in alumnos %}
+    <tr><td><a href="{% url 'empresa:alumno' a.pk %}">{{ a.nombre_completo }}</a></td><td>{{ a.curso }}</td>
+      <td>{{ a.horas_pendientes }} h</td>
+      <td>{{ a.jornada_preferida_display|default:"—" }}{% if a.disponibilidad %}<br><small class="apunte">{{ a.disponibilidad }}</small>{% endif %}</td>
+      <td>{% if a.cv %}<a href="{% url 'cv' a.pk %}">Descargar CV</a>{% else %}—{% endif %}</td>
+      <td>{% if a.solicitud %}<span class="estado {{ a.solicitud.estado|lower }}">{{ a.solicitud.get_estado_display }}</span>{% else %}<a href="{% url 'empresa:alumno' a.pk %}">Solicitar</a>{% endif %}</td></tr>
+  {% empty %}
+    <tr><td colspan="6" class="vacio">Todavía no hay alumnado en tus procesos.</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

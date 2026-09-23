@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block contenido %}
+<div class="cabecera">
+  <div><h1>Procesos de selección</h1><p class="sub">Todos los procesos de {{ centro.nombre }}, los lleve quien los lleve.</p></div>
+  <div class="acciones">
+    <a class="btn sec" href="{% url 'tutor:descargar_informe' 'procesos' 'xlsx' %}">Excel</a>
+    <a class="btn sec" href="{% url 'tutor:descargar_informe' 'procesos' 'pdf' %}">PDF</a>
+    <a class="btn" href="{% url 'tutor:nuevo_proceso' %}">Nuevo proceso</a>
+  </div>
+</div>
+
+<form method="get" class="bloque" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:end;margin-bottom:1rem">
+  <div style="flex:1;min-width:170px"><label for="f-estado">Estado</label>
+    <select name="estado" id="f-estado"><option value="">Todos</option>
+      {% for valor, texto in estados %}<option value="{{ valor }}"{% if filtros.estado == valor %} selected{% endif %}>{{ texto }}</option>{% endfor %}</select></div>
+  <div style="flex:1;min-width:170px"><label for="f-curso">Curso</label>
+    <select name="curso" id="f-curso"><option value="">Todos</option>
+      {% for c in cursos %}<option value="{{ c.pk }}"{% if filtros.curso == c.pk|stringformat:"s" %} selected{% endif %}>{{ c }}</option>{% endfor %}</select></div>
+  <div style="flex:1;min-width:170px"><label for="f-tutor">Tutor</label>
+    <select name="tutor" id="f-tutor"><option value="">Todos</option><option value="mios"{% if filtros.tutor == "mios" %} selected{% endif %}>Solo los míos</option></select></div>
+  <div style="flex:2;min-width:200px"><label for="f-q">Empresa o puesto</label><input type="search" name="q" id="f-q" value="{{ filtros.q }}"></div>
+  <button class="btn sec" type="submit">Filtrar</button>
+</form>
+
+<div class="tabla-env"><table>
+  <thead><tr><th>Empresa</th><th>Puesto</th><th>Curso</th><th>Tutor FFE</th><th>Estado</th><th>Candidatos</th><th>Plazas</th><th>Prácticas</th></tr></thead>
+  <tbody>
+  {% for p in procesos %}
+    <tr>
+      <td><a href="{% url 'tutor:proceso' p.pk %}">{{ p.empresa }}</a></td>
+      <td>{{ p.puesto }}</td>
+      <td>{{ p.curso }}</td>
+      <td>{{ p.tutor.nombre_completo }}</td>
+      <td><span class="estado {{ p.estado|lower }}">{{ p.get_estado_display }}</span></td>
+      <td>{{ p.n_candidatos }}</td>
+      <td>{{ p.n_seleccionados }} / {{ p.plazas }}</td>
+      <td>{% if p.fecha_inicio %}{{ p.fecha_inicio|date:"d/m/y" }}{% if p.fecha_fin %} – {{ p.fecha_fin|date:"d/m/y" }}{% endif %}{% if p.horas %}<br><small>{{ p.horas }} h</small>{% endif %}{% else %}—{% endif %}</td>
+    </tr>
+  {% empty %}<tr><td colspan="8" class="vacio">Ningún proceso coincide con el filtro.</td></tr>{% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

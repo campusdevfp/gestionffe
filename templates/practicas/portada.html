@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block titulo %}Prácticas en empresa · {{ responsable.nombre }}{% endblock %}
+{% block contenido %}
+<div class="portada">
+
+  <section class="hero">
+    <div class="hero-texto">
+      <p class="hero-centro">{{ responsable.nombre }}</p>
+      <h1>Cada alumno,<br>su empresa,<br>a tiempo.</h1>
+      <p class="hero-bajada">Gestión de la formación en centros de trabajo: cursos, alumnado, empresas colaboradoras y
+        procesos de selección, con un registro común para que todo el equipo de tutores sepa quién habla con quién.</p>
+    </div>
+    <svg class="hero-figura" viewBox="0 0 340 290" role="img" aria-label="Del alumnado y las empresas nace un proceso de selección que termina en una plaza de prácticas">
+      <defs>
+        <marker id="punta" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0 0 L8 4 L0 8 z" fill="currentColor"/>
+        </marker>
+      </defs>
+      <g fill="none" stroke="currentColor" stroke-width="1.4" opacity=".85">
+        <rect x="4" y="16" width="136" height="60" rx="8"/>
+        <rect x="4" y="106" width="136" height="60" rx="8"/>
+        <rect x="192" y="60" width="144" height="60" rx="8"/>
+        <rect x="192" y="196" width="144" height="60" rx="8"/>
+        <path d="M140 46 C 168 46, 166 82, 190 88" marker-end="url(#punta)"/>
+        <path d="M140 136 C 168 136, 166 100, 190 94" marker-end="url(#punta)"/>
+        <path d="M264 120 L264 192" marker-end="url(#punta)"/>
+      </g>
+      <g font-size="13" font-weight="600" fill="currentColor">
+        <text x="20" y="42">Alumnado</text>
+        <text x="20" y="132">Empresas</text>
+        <text x="208" y="86">Proceso</text>
+        <text x="208" y="222">Plaza</text>
+      </g>
+      <g font-size="11" fill="currentColor" opacity=".72">
+        <text x="20" y="62">CV y horas</text>
+        <text x="20" y="152">plazas y tutores</text>
+        <text x="208" y="106">candidatos</text>
+        <text x="208" y="242">fechas y jornada</text>
+      </g>
+    </svg>
+  </section>
+
+  <section class="puertas">
+    <article class="puerta">
+      <span class="puerta-etiqueta">Profesorado</span>
+      <h2>Tutores y administración</h2>
+      <p>Lleva tus cursos, abre procesos con empresas, registra resultados y descarga los informes del centro.</p>
+      <a class="btn" href="{% url 'cuentas:login' %}">Entrar</a>
+    </article>
+    <article class="puerta">
+      <span class="puerta-etiqueta">Alumnado</span>
+      <h2>Date de alta en tu curso</h2>
+      <p>Con el código que te da tu tutor FFE. Después subes tu currículum y sigues tus procesos desde tu panel.</p>
+      <a class="btn sec" href="{% url 'alumno:registro' %}">Crear mi cuenta</a>
+    </article>
+    <article class="puerta">
+      <span class="puerta-etiqueta">Empresas</span>
+      <h2>Colabora con el centro</h2>
+      <p>Registra tu empresa, indica a tus tutores laborales y valora al alumnado candidato de cada proceso.</p>
+      <a class="btn sec" href="{% url 'empresa:registro' %}">Registrar empresa</a>
+    </article>
+  </section>
+
+  <section class="pasos">
+    <h2>Cómo funciona</h2>
+    <ol>
+      <li><span>1</span><div><strong>El centro prepara el curso.</strong> Administración crea los cursos y asigna un
+        tutor FFE a cada uno.</div></li>
+      <li><span>2</span><div><strong>El alumnado entra.</strong> Por importación del tutor o registrándose con el
+        código del curso, y sube su currículum.</div></li>
+      <li><span>3</span><div><strong>Se abren procesos.</strong> Una empresa, un curso y unas plazas; el tutor y la
+        empresa proponen candidatos.</div></li>
+      <li><span>4</span><div><strong>Se cierra con condiciones.</strong> Quien resulta elegido ve su empresa, su
+        tutor laboral, las fechas, las horas y la jornada.</div></li>
+    </ol>
+  </section>
+
+  <section class="aviso-legal">
+    <h2>Antes de registrarte</h2>
+    <p>Esta aplicación es de uso interno de {{ responsable.nombre }} y da acceso solo a las personas autorizadas por
+      el centro. Al crear una cuenta tratamos tus datos personales para gestionar la formación en centros de trabajo:
+      matrícula en el curso, currículum, procesos de selección y su resultado.</p>
+    <p>Puedes ejercer tus derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad
+      escribiendo a <a href="mailto:{{ responsable.dpd }}">{{ responsable.dpd }}</a>. Los detalles están en la
+      <a href="{% url 'privacidad' %}">información sobre protección de datos</a>.</p>
+    <p class="apunte">Los currículums solo son accesibles para tu tutor FFE y para las empresas en cuyos procesos
+      participes, y queda registro de cada descarga. No compartimos datos con terceros ajenos al proceso ni usamos
+      los datos con fines comerciales.</p>
+  </section>
+</div>
+{% endblock %}

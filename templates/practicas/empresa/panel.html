@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block contenido %}
+<div class="cabecera">
+  <div><h1>{{ empresa.nombre }}</h1><p class="sub">{{ empresa.cif }}</p></div>
+  <div class="acciones"><a class="btn" href="{% url 'empresa:alumnos' %}">Ver alumnado</a></div>
+</div>
+
+<div class="dos">
+  <div>
+    <h2>Procesos en marcha</h2>
+    <div class="tabla-env"><table>
+      <thead><tr><th>Puesto</th><th>Centro y curso</th><th>Tutor FFE</th><th>Estado</th><th>Candidatos</th></tr></thead>
+      <tbody>
+      {% for p in abiertos %}
+        <tr><td><a href="{% url 'empresa:proceso' p.pk %}">{{ p.puesto }}</a></td>
+          <td>{{ p.curso.centro.nombre }}<br><small>{{ p.curso }}</small></td>
+          <td>{{ p.tutor.nombre_completo }}<br><small>{{ p.tutor.email }}</small></td>
+          <td><span class="estado {{ p.estado|lower }}">{{ p.get_estado_display }}</span></td>
+          <td>{{ p.participaciones.all|length }}</td></tr>
+      {% empty %}<tr><td colspan="5" class="vacio">No hay procesos en marcha. Los abre el tutor FFE del centro tras hablar contigo.</td></tr>{% endfor %}
+      </tbody>
+    </table></div>
+
+    {% if cerrados %}
+    <h2>Procesos cerrados</h2>
+    <div class="tabla-env"><table>
+      <thead><tr><th>Puesto</th><th>Curso</th><th>Estado</th><th>Seleccionados</th></tr></thead>
+      <tbody>
+      {% for p in cerrados %}
+        <tr><td><a href="{% url 'empresa:proceso' p.pk %}">{{ p.puesto }}</a></td><td>{{ p.curso }}</td>
+          <td><span class="estado {{ p.estado|lower }}">{{ p.get_estado_display }}</span></td><td>{{ p.seleccionados }} / {{ p.plazas }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+    {% endif %}
+
+    <section class="bloque" style="margin-top:1.5rem">
+      <h3>Datos de la empresa</h3>
+      <dl class="datos">
+        <dt>Dirección</dt><dd>{{ empresa.direccion }}</dd><dt>Web</dt><dd>{{ empresa.web|default:"—" }}</dd>
+        <dt>Persona de contacto</dt><dd>{{ empresa.persona_contacto }}</dd><dt>Email</dt><dd>{{ empresa.email }}</dd>
+        <dt>Teléfono</dt><dd>{{ empresa.telefono }}</dd>
+      </dl>
+      <p style="margin:1rem 0 0"><a class="btn sec" href="{% url 'ficha:editar' empresa.pk %}">Editar datos</a></p>
+    </section>
+  </div>
+
+  <aside>
+    <section class="bloque">
+      <h3>Responsable legal</h3>
+      {% if responsable %}<p style="margin:0 0 .75rem">{{ responsable.nombre }}<br><small>{{ responsable.dni }}</small></p>
+      {% else %}<p class="apunte" style="margin:0 0 .75rem">Falta el responsable legal.</p>{% endif %}
+      <a class="btn sec peq" href="{% url 'ficha:responsable' empresa.pk %}">{% if responsable %}Cambiar{% else %}Añadir{% endif %} responsable</a>
+    </section>
+    <section class="bloque" style="margin-top:1rem">
+      <h3>Tutores laborales</h3>
+      {% for t in tutores %}
+      <div style="display:flex;justify-content:space-between;gap:.5rem;padding:.4rem 0;border-bottom:1px solid var(--linea)">
+        <div>{{ t.nombre }}<br><small style="color:var(--tinta-suave)">{{ t.dni }} · {{ t.telefono }}</small></div>
+        <div style="white-space:nowrap"><a href="{% url 'ficha:tutor' empresa.pk t.pk %}">Editar</a>
+          <form class="en-linea" method="post" action="{% url 'ficha:tutor_borrar' empresa.pk t.pk %}" onsubmit="return confirm('¿Eliminar a este tutor?')">{% csrf_token %}<button class="btn peligro peq" type="submit">Quitar</button></form></div>
+      </div>
+      {% empty %}<p class="apunte" style="margin:0 0 .75rem">Añade al menos un tutor laboral: es quien acompañará al alumnado.</p>{% endfor %}
+      <a class="btn sec peq" style="margin-top:.75rem" href="{% url 'ficha:tutor_nuevo' empresa.pk %}">Añadir tutor</a>
+    </section>
+  </aside>
+</div>
+{% endblock %}

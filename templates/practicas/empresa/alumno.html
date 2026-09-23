@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ alumno.nombre_completo }}</h1>
+<p class="sub">{{ alumno.curso }} · <a href="{% url 'empresa:alumnos' %}">Volver al alumnado</a></p>
+<div class="rejilla">
+  <section class="bloque">
+    <h3>Perfil profesional</h3>
+    <dl class="datos">
+      <dt>Curso</dt><dd>{{ alumno.curso.nombre }}</dd>
+      <dt>Promoción</dt><dd>{{ alumno.curso.anio_inicio }}–{{ alumno.curso.anio_fin }}</dd>
+      <dt>Centro</dt><dd>{{ alumno.curso.centro.nombre }}</dd>
+      <dt>Horas pendientes</dt><dd>{{ alumno.horas_pendientes }} h de {{ alumno.horas_requeridas }} h</dd>
+      <dt>Jornada</dt><dd>{{ alumno.jornada_preferida_display|default:"Sin indicar" }}</dd>
+      <dt>Disponibilidad</dt><dd>{{ alumno.disponibilidad|default:"Sin indicar" }}</dd>
+      <dt>Currículum</dt><dd>{% if alumno.cv %}<a href="{% url 'cv' alumno.pk %}">Descargar CV</a>{% else %}No disponible{% endif %}</dd>
+    </dl>
+  </section>
+  <section class="bloque">
+    <h3>Procesos contigo</h3>
+    {% for p in participaciones %}
+      <p style="margin:0 0 .5rem">{{ p.proceso.puesto }} · <span class="estado {{ p.resultado|lower }}">{{ p.get_resultado_display }}</span></p>
+    {% empty %}<p style="margin:0;color:var(--tinta-suave)">Sin procesos.</p>{% endfor %}
+  </section>
+  <section class="bloque">
+    <h3>Contacto</h3>
+    {% if ve_contacto %}
+      <dl class="datos"><dt>Email</dt><dd><a href="mailto:{{ alumno.email }}">{{ alumno.email }}</a></dd><dt>Teléfono</dt><dd>{{ alumno.telefono|default:"—" }}</dd></dl>
+    {% elif solicitud %}
+      <p style="margin:0">Solicitud <span class="estado {{ solicitud.estado|lower }}">{{ solicitud.get_estado_display|lower }}</span> desde el {{ solicitud.fecha|date:"d/m/Y" }}.</p>
+    {% else %}
+      <p style="margin:0 0 .75rem">Los datos de contacto se comparten con autorización del tutor FFE, o automáticamente si seleccionas al alumno.</p>
+      <form method="post">{% csrf_token %}{{ form }}<button class="btn" type="submit">Solicitar contacto</button></form>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>No tienes acceso a esta página</h1>
+<p class="sub">Tu usuario no tiene permiso para ver este contenido. Si crees que es un error, habla con coordinación.</p>
+<a class="btn" href="{% url 'inicio' %}">Ir a mi inicio</a>
+{% endblock %}

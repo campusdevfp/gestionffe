@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block contenido %}
+<div class="cabecera">
+  <div><h1>{{ empresa.nombre }}</h1><p class="sub">{{ empresa.cif }} · <a href="{% url 'tutor:empresas' %}">Todas las empresas</a></p></div>
+  <div class="acciones">
+    <a class="btn sec" href="{% url 'ficha:editar' empresa.pk %}">Editar datos</a>
+    {% if empresa.usuario %}
+    <form class="en-linea" method="post" action="{% url 'tutor:restablecer_empresa' empresa.pk %}" onsubmit="return confirm('¿Generar una contraseña nueva para esta empresa?')">{% csrf_token %}<button class="btn sec" type="submit">Restablecer contraseña</button></form>
+    {% else %}
+    <form class="en-linea" method="post" action="{% url 'tutor:crear_acceso' empresa.pk %}">{% csrf_token %}<button class="btn sec" type="submit">Dar acceso a la empresa</button></form>
+    {% endif %}
+    <a class="btn" href="{% url 'tutor:nuevo_proceso' %}?empresa={{ empresa.pk }}">Nuevo proceso</a>
+  </div>
+</div>
+
+<div class="dos">
+  <div>
+    <section class="bloque">
+      <dl class="datos">
+        <dt>Dirección</dt><dd>{{ empresa.direccion }}</dd>
+        <dt>Web</dt><dd>{% if empresa.web %}<a href="{{ empresa.web }}" rel="noopener" target="_blank">{{ empresa.web }}</a>{% else %}—{% endif %}</dd>
+        <dt>Persona de contacto</dt><dd>{{ empresa.persona_contacto }}</dd>
+        <dt>Email</dt><dd><a href="mailto:{{ empresa.email }}">{{ empresa.email }}</a></dd>
+        <dt>Teléfono</dt><dd>{{ empresa.telefono }}</dd>
+        <dt>Acceso</dt><dd>{% if empresa.usuario %}Usuario {{ empresa.usuario.username }}{% else %}Sin acceso a la aplicación{% endif %}</dd>
+      </dl>
+    </section>
+
+    <h2>Procesos con esta empresa</h2>
+    <div class="tabla-env"><table>
+      <thead><tr><th>Puesto</th><th>Curso</th><th>Tutor FFE</th><th>Estado</th><th>Plazas</th></tr></thead>
+      <tbody>
+      {% for p in procesos %}
+        <tr><td><a href="{% url 'tutor:proceso' p.pk %}">{{ p.puesto }}</a></td><td>{{ p.curso }}</td>
+          <td>{{ p.tutor.nombre_completo }}</td><td><span class="estado {{ p.estado|lower }}">{{ p.get_estado_display }}</span></td>
+          <td>{{ p.seleccionados }} / {{ p.plazas }}</td></tr>
+      {% empty %}<tr><td colspan="5" class="vacio">Ningún proceso con esta empresa todavía.</td></tr>{% endfor %}
+      </tbody>
+    </table></div>
+
+    <h2>Seguimiento de la empresa</h2>
+    <div class="tabla-env"><table>
+      <thead><tr><th>Fecha y hora</th><th>Medio</th><th>Tutor</th><th>Proceso</th><th>Observaciones</th></tr></thead>
+      <tbody>
+      {% for s in seguimientos %}
+        <tr><td style="white-space:nowrap">{{ s.fecha_hora|date:"d/m/Y H:i" }}</td><td>{{ s.get_medio_display }}</td>
+          <td>{{ s.tutor|default:"—" }}</td><td>{% if s.proceso %}<a href="{% url 'tutor:proceso' s.proceso.pk %}">{{ s.proceso.puesto }}</a>{% else %}General{% endif %}</td>
+          <td>{{ s.observaciones|linebreaksbr }}</td></tr>
+      {% empty %}<tr><td colspan="5" class="vacio">Sin actuaciones registradas.</td></tr>{% endfor %}
+      </tbody>
+    </table></div>
+  </div>
+
+  <aside>
+    <section class="bloque">
+      <h3>Registrar actuación</h3>
+      <form method="post" action="{% url 'tutor:seguimiento' empresa.pk %}">{% csrf_token %}{{ form_seguimiento }}<button class="btn" type="submit">Registrar</button></form>
+    </section>
+    <section class="bloque" style="margin-top:1rem">
+      <h3>Responsable legal</h3>
+      {% if responsable %}<p style="margin:0 0 .75rem">{{ responsable.nombre }}<br><small>{{ responsable.dni }}</small></p>
+      {% else %}<p class="apunte" style="margin:0 0 .75rem">Falta el responsable legal.</p>{% endif %}
+      <a class="btn sec peq" href="{% url 'ficha:responsable' empresa.pk %}">{% if responsable %}Cambiar{% else %}Añadir{% endif %} responsable</a>
+    </section>
+    <section class="bloque" style="margin-top:1rem">
+      <h3>Tutores laborales</h3>
+      {% for t in tutores %}
+        <div style="display:flex;justify-content:space-between;gap:.5rem;padding:.4rem 0;border-bottom:1px solid var(--linea)">
+          <div>{{ t.nombre }}<br><small style="color:var(--tinta-suave)">{{ t.dni }} · {{ t.telefono }}</small></div>
+          <div style="white-space:nowrap"><a href="{% url 'ficha:tutor' empresa.pk t.pk %}">Editar</a>
+            <form class="en-linea" method="post" action="{% url 'ficha:tutor_borrar' empresa.pk t.pk %}" onsubmit="return confirm('¿Eliminar a este tutor?')">{% csrf_token %}<button class="btn peligro peq" type="submit">Quitar</button></form></div>
+        </div>
+      {% empty %}<p class="apunte" style="margin:0 0 .75rem">Sin tutores laborales registrados.</p>{% endfor %}
+      <a class="btn sec peq" style="margin-top:.75rem" href="{% url 'ficha:tutor_nuevo' empresa.pk %}">Añadir tutor</a>
+    </section>
+  </aside>
+</div>
+{% endblock %}

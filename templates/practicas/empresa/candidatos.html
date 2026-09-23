@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>Proponer alumnado</h1>
+<p class="sub">{{ proceso.puesto }} · {{ proceso.curso }} · {{ proceso.curso.centro.nombre }}.
+  Marca a quien quieras valorar; el tutor FFE lo verá en el proceso y seguirá el mismo circuito que el resto de
+  candidaturas. <a href="{% url 'empresa:proceso' proceso.pk %}">Volver al proceso</a></p>
+<form method="post">
+  {% csrf_token %}
+  <div class="tabla-env"><table>
+    <thead><tr><th></th><th>Alumno</th><th>Horas pendientes</th><th>Disponibilidad</th><th>Currículum</th></tr></thead>
+    <tbody>
+    {% for a in alumnos %}
+      <tr>
+        <td><input type="checkbox" name="alumnos" value="{{ a.pk }}" id="a{{ a.pk }}"></td>
+        <td><label for="a{{ a.pk }}" style="font-weight:400;margin:0">{{ a.nombre_completo }}</label></td>
+        <td>{{ a.horas_pendientes }} h</td>
+        <td>{{ a.jornada_preferida_display|default:"—" }}{% if a.disponibilidad %}<br><small class="apunte">{{ a.disponibilidad }}</small>{% endif %}</td>
+        <td>{% if a.cv %}<a href="{% url 'cv' a.pk %}">Descargar</a>{% else %}—{% endif %}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="5" class="vacio">Todo el alumnado del curso ya participa en este proceso.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% if alumnos %}<p style="margin-top:1rem"><button class="btn" type="submit">Añadir al proceso</button></p>{% endif %}
+</form>
+{% endblock %}

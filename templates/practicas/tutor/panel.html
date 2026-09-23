@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block contenido %}
+<div class="cabecera">
+  <div><h1>Hola, {{ user.tutor_ffe.nombre }}</h1><p class="sub">{{ centro.nombre }} · código {{ centro.codigo }}</p></div>
+  <div class="acciones">
+    <a class="btn sec" href="{% url 'tutor:importar_alumnos' %}">Importar alumnado</a>
+    <a class="btn" href="{% url 'tutor:nuevo_proceso' %}">Nuevo proceso</a>
+  </div>
+</div>
+
+<div class="cifras-fila">
+  <div class="cifra"><b>{{ total_alumnos }}</b><span>alumnos en tus cursos</span></div>
+  <div class="cifra"><b>{{ total_colocados }}</b><span>con plaza confirmada</span></div>
+  <div class="cifra"><b>{{ total_sin_plaza }}</b><span>aún sin plaza</span></div>
+  <div class="cifra"><a href="{% url 'tutor:procesos' %}?tutor=mios"><b>{{ total_en_marcha }}</b><span>procesos tuyos en marcha</span></a></div>
+</div>
+
+{% if tareas %}
+<h2>Requiere tu atención</h2>
+<ul class="tareas">
+  {% for t in tareas %}
+  <li{% if not t.urgente %} class="suave"{% endif %}>
+    <span class="que">{{ t.texto }}</span>
+    <a class="btn sec peq" href="{{ t.enlace }}">{{ t.accion }}</a>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<div class="banda neutra">Nada pendiente por tu parte ahora mismo.</div>
+{% endif %}
+
+<h2>Tus cursos</h2>
+<div class="rejilla">
+  {% for c in cursos %}
+  <section class="bloque curso-tarjeta">
+    <h3>{{ c.nombre }} <span class="apunte">{{ c.anio_inicio }}–{{ c.anio_fin }}</span></h3>
+    <div class="progreso" role="img" aria-label="{{ c.n_colocados }} de {{ c.n_alumnos }} con plaza">
+      <span style="width:{% if c.n_alumnos %}{% widthratio c.n_colocados c.n_alumnos 100 %}{% else %}0{% endif %}%"></span>
+    </div>
+    <p class="cifras">{{ c.n_colocados }} de {{ c.n_alumnos }} con plaza · {{ c.n_procesos }} proceso{{ c.n_procesos|pluralize }} en marcha</p>
+    <p class="apunte" style="margin-bottom:1rem">Autorregistro <span class="clave">{{ c.codigo_matricula }}</span>
+      {% if c.autorregistro %}<span class="estado abierto">abierto</span>{% else %}<span class="estado cerrado">cerrado</span>{% endif %}</p>
+    <div class="acciones">
+      <a class="btn sec" href="{% url 'tutor:alumnos' c.pk %}">Alumnado</a>
+      <a class="btn sec" href="{% url 'tutor:nuevo_proceso' %}?curso={{ c.pk }}">Nuevo proceso</a>
+    </div>
+  </section>
+  {% empty %}
+  <div class="bloque">Todavía no eres tutor de ningún curso. La administración del centro asigna los cursos.</div>
+  {% endfor %}
+</div>
+
+<div class="dos" style="margin-top:2.25rem">
+  <div>
+    <div class="cabecera" style="margin-bottom:.85rem">
+      <h2 style="margin:0">Movimiento reciente en el centro</h2>
+      <a href="{% url 'tutor:procesos' %}">Registro completo</a>
+    </div>
+    <div class="tabla-env"><table>
+      <thead><tr><th>Empresa</th><th>Puesto</th><th>Curso</th><th>Tutor</th><th>Estado</th></tr></thead>
+      <tbody>
+      {% for p in actividad %}
+        <tr><td><a href="{% url 'tutor:proceso' p.pk %}">{{ p.empresa }}</a></td><td>{{ p.puesto }}</td>
+          <td>{{ p.curso.nombre }}</td><td>{{ p.tutor.nombre_completo }}</td>
+          <td><span class="estado {{ p.estado|lower }}">{{ p.get_estado_display }}</span></td></tr>
+      {% empty %}<tr><td colspan="5" class="vacio">Todavía no hay procesos en el centro.</td></tr>{% endfor %}
+      </tbody>
+    </table></div>
+  </div>
+  <aside>
+    <h2 style="margin-top:0;margin-bottom:.85rem">Últimas actuaciones</h2>
+    <section class="bloque">
+      {% for s in ultimos_seguimientos %}
+        <div style="padding:.5rem 0;border-bottom:1px solid var(--linea)">
+          <a href="{% url 'tutor:empresa' s.empresa.pk %}">{{ s.empresa }}</a>
+          <div class="apunte">{{ s.fecha_hora|date:"d/m/Y" }} · {{ s.get_medio_display }} · {{ s.tutor|default:"—" }}</div>
+        </div>
+      {% empty %}<p class="apunte" style="margin:0">Sin actuaciones registradas.</p>{% endfor %}
+    </section>
+  </aside>
+</div>
+{% endblock %}

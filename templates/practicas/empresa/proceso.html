@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ proceso.puesto }}</h1>
+<p class="sub">{{ proceso.curso.centro.nombre }} · {{ proceso.curso }} · <span class="estado {{ proceso.estado|lower }}">{{ proceso.get_estado_display }}</span></p>
+<div class="dos">
+  <div>
+    <div class="cabecera" style="margin-bottom:.85rem">
+      <h2 style="margin:0">Candidaturas</h2>
+      {% if proceso.abierto %}<a class="btn sec" href="{% url 'empresa:candidatos' proceso.pk %}">Proponer alumnado</a>{% endif %}
+    </div>
+    <div class="tabla-env"><table>
+      <thead><tr><th>Alumno</th><th>Horas pendientes</th><th>Disponibilidad</th><th>CV</th><th>Resultado</th><th>Contacto</th></tr></thead>
+      <tbody>
+      {% for p in participaciones %}
+        <tr><td><a href="{% url 'empresa:alumno' p.alumno.pk %}">{{ p.alumno.nombre_completo }}</a>
+            {% if p.origen == "EMPRESA" %}<br><small class="apunte">propuesto por vosotros</small>{% endif %}</td>
+          <td>{{ p.alumno.horas_pendientes }} h</td>
+          <td>{{ p.alumno.jornada_preferida_display|default:"—" }}{% if p.alumno.disponibilidad %}<br><small class="apunte">{{ p.alumno.disponibilidad }}</small>{% endif %}</td>
+          <td>{% if p.alumno.cv %}<a href="{% url 'cv' p.alumno.pk %}">Descargar</a>{% else %}—{% endif %}</td>
+          <td><span class="estado {{ p.resultado|lower }}">{{ p.get_resultado_display }}</span></td>
+          <td>{% if p.resultado == "SELECCIONADO" %}{{ p.alumno.email }}<br>{{ p.alumno.telefono|default:"" }}
+            {% elif p.solicitud %}<span class="estado {{ p.solicitud.estado|lower }}">{{ p.solicitud.get_estado_display }}</span>
+            {% else %}<a href="{% url 'empresa:alumno' p.alumno.pk %}">Solicitar</a>{% endif %}</td></tr>
+      {% empty %}<tr><td colspan="6" class="vacio">El tutor FFE todavía no ha propuesto candidatos.</td></tr>{% endfor %}
+      </tbody>
+    </table></div>
+    <p class="sub" style="margin-top:1rem">La selección la registra el tutor FFE. Comunícale tu decisión y actualizará el proceso.</p>
+  </div>
+  <aside>
+    <section class="bloque">
+      <h3>Condiciones</h3>
+      <dl class="datos">
+        <dt>Plazas</dt><dd>{{ proceso.seleccionados }} de {{ proceso.plazas }} cubiertas</dd>
+        <dt>Inicio</dt><dd>{{ proceso.fecha_inicio|date:"d/m/Y"|default:"Sin fijar" }}</dd>
+        <dt>Fin</dt><dd>{{ proceso.fecha_fin|date:"d/m/Y"|default:"Sin fijar" }}</dd>
+        <dt>Horas</dt><dd>{{ proceso.horas|default:"Sin fijar" }}</dd>
+        <dt>Jornada</dt><dd>{{ proceso.get_jornada_display|default:"Sin fijar" }}</dd>
+        <dt>Tutor laboral</dt><dd>{{ proceso.tutor_laboral|default:"Sin asignar" }}</dd>
+      </dl>
+    </section>
+    <section class="bloque" style="margin-top:1rem">
+      <h3>Tutor FFE</h3>
+      <p style="margin:0">{{ proceso.tutor.nombre_completo }}<br><a href="mailto:{{ proceso.tutor.email }}">{{ proceso.tutor.email }}</a>{% if proceso.tutor.telefono %}<br>{{ proceso.tutor.telefono }}{% endif %}</p>
+    </section>
+  </aside>
+</div>
+{% endblock %}

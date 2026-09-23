@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>Informes</h1>
+<p class="sub">Datos del centro en Excel para trabajar con ellos, o en PDF para archivar y firmar.</p>
+<div class="rejilla">
+{% for clave, nombre, descripcion in informes %}
+  <section class="bloque">
+    <h3>{{ nombre }}</h3>
+    <p style="color:var(--tinta-suave);font-size:.9rem;margin:0 0 1rem">{{ descripcion }}</p>
+    <div class="acciones">
+      <a class="btn" href="{% url 'tutor:descargar_informe' clave 'xlsx' %}">Excel</a>
+      <a class="btn sec" href="{% url 'tutor:descargar_informe' clave 'pdf' %}">PDF</a>
+    </div>
+  </section>
+{% endfor %}
+</div>
+{% endblock %}

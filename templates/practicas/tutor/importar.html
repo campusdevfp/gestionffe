@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>{{ titulo }}</h1>
+<p class="sub">CSV en UTF-8, separado por punto y coma, con esta cabecera en la primera fila:</p>
+<pre class="bloque" style="overflow-x:auto;margin:0 0 1.25rem">{{ columnas }}
+{{ ejemplo }}</pre>
+<form method="post" enctype="multipart/form-data" class="formulario bloque">
+  {% csrf_token %}{{ form }}
+  <button class="btn" type="submit">Importar</button>
+</form>
+
+{% if resultado %}
+<h2>Resultado</h2>
+<p>{{ resultado.creados|length }} registro{{ resultado.creados|length|pluralize }} importado{{ resultado.creados|length|pluralize }}, {{ resultado.errores|length }} rechazado{{ resultado.errores|length|pluralize }}.</p>
+{% if resultado.credenciales %}
+<div class="banda">Estas contraseñas iniciales solo se muestran ahora. Descárgalas y repártelas: cada alumno tendrá que cambiarla en su primer acceso.</div>
+<p><a class="btn" download="credenciales_alumnado.csv" href="data:text/csv;charset=utf-8;base64,{{ resultado.credenciales_csv_base64 }}">Descargar credenciales (CSV)</a></p>
+<div class="tabla-env"><table>
+  <thead><tr><th>Usuario</th><th>Contraseña inicial</th><th>Nombre</th></tr></thead>
+  <tbody>{% for u, p, n in resultado.credenciales %}<tr><td>{{ u }}</td><td><span class="clave">{{ p }}</span></td><td>{{ n }}</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endif %}
+{% if resultado.errores %}
+<h2>Filas rechazadas</h2>
+<div class="tabla-env"><table>
+  <thead><tr><th>Línea</th><th>Identificador</th><th>Motivo</th></tr></thead>
+  <tbody>{% for linea, ident, motivo in resultado.errores %}<tr><td>{{ linea }}</td><td>{{ ident }}</td><td>{{ motivo }}</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endif %}
+{% endif %}
+{% endblock %}

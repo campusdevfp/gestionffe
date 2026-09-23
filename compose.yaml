@@ -1,0 +1,48 @@
+# Despliegue en el VPS: la aplicación y un proxy que gestiona el certificado HTTPS.
+services:
+  app:
+    image: ${IMAGEN:-ghcr.io/USUARIO/practicas-empresa:latest}
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - datos:/datos          # base de datos SQLite y currículums
+    expose:
+      - "8000"
+    networks: [interna]
+
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMINIO: ${DOMINIO:?define DOMINIO en .env}
+      EMAIL_TLS: ${EMAIL_TLS:?define EMAIL_TLS en .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_datos:/data      # certificados de Let's Encrypt
+      - caddy_config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+    networks: [interna]
+
+  copias:
+    image: alpine:3
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - datos:/datos:ro
+      - ./copias:/copias
+      - ./scripts/copia.sh:/copia.sh:ro
+    entrypoint: ["/bin/sh", "-c", "while true; do sh /copia.sh; sleep 86400; done"]
+    networks: [interna]
+
+volumes:
+  datos:
+  caddy_datos:
+  caddy_config:
+
+networks:
+  interna:

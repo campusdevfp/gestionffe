@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>Solicitudes de contacto</h1>
+<p class="sub">Si aceptas, la empresa podrá ver el email y el teléfono de ese alumno. Al seleccionarlo en un proceso los ve automáticamente.</p>
+<h2>Pendientes</h2>
+<div class="tabla-env"><table>
+  <thead><tr><th>Fecha</th><th>Empresa</th><th>Alumno</th><th>Motivo</th><th></th></tr></thead>
+  <tbody>
+  {% for s in pendientes %}
+    <tr>
+      <td>{{ s.fecha|date:"d/m/Y" }}</td><td><a href="{% url 'tutor:empresa' s.empresa.pk %}">{{ s.empresa }}</a></td>
+      <td>{{ s.alumno.nombre_completo }}<br><small>{{ s.alumno.curso }}</small></td>
+      <td>{{ s.motivo|default:"—" }}</td>
+      <td style="white-space:nowrap">
+        <form class="en-linea" method="post" action="{% url 'tutor:resolver' s.pk %}">{% csrf_token %}
+          <button class="btn peq" name="decision" value="aceptar">Aceptar</button>
+          <button class="btn peligro peq" name="decision" value="rechazar">Rechazar</button>
+        </form>
+      </td>
+    </tr>
+  {% empty %}<tr><td colspan="5" class="vacio">No hay solicitudes pendientes.</td></tr>{% endfor %}
+  </tbody>
+</table></div>
+<h2>Resueltas</h2>
+<div class="tabla-env"><table>
+  <thead><tr><th>Fecha</th><th>Empresa</th><th>Alumno</th><th>Estado</th><th>Resuelta por</th></tr></thead>
+  <tbody>
+  {% for s in resueltas %}
+    <tr><td>{{ s.fecha|date:"d/m/Y" }}</td><td>{{ s.empresa }}</td><td>{{ s.alumno.nombre_completo }}</td>
+    <td><span class="estado {{ s.estado|lower }}">{{ s.get_estado_display }}</span></td><td>{{ s.resuelta_por|default:"—" }}</td></tr>
+  {% empty %}<tr><td colspan="5" class="vacio">Todavía no hay solicitudes resueltas.</td></tr>{% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

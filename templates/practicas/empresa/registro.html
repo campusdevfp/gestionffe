@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block titulo %}Alta de empresa{% endblock %}
+{% block contenido %}
+<div style="max-width:680px;margin:0 auto">
+  <h1>Alta de empresa colaboradora</h1>
+  <p class="sub">Registra tu empresa para ofrecer plazas de prácticas. El profesorado revisará los datos y te asignará las plazas acordadas. ¿Ya tienes cuenta? <a href="{% url 'cuentas:login' %}">Entra aquí</a>.</p>
+  <form method="post" class="formulario bloque" style="max-width:none">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<ul class="errorlist nonfield">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    <h3>Empresa</h3>
+    {% for f in form %}{% if f.name in "nombre cif direccion web persona_contacto email telefono" %}{{ f.as_field_group }}{% endif %}{% endfor %}
+    <h3 style="margin-top:1.5rem">Responsable legal</h3>
+    {{ form.responsable_nombre.as_field_group }}{{ form.responsable_dni.as_field_group }}
+    <h3 style="margin-top:1.5rem">Acceso a la aplicación</h3>
+    {{ form.usuario.as_field_group }}{{ form.password1.as_field_group }}{{ form.password2.as_field_group }}
+    <div class="acepto" style="margin-top:1.5rem">{{ form.informada.as_field_group }}</div>
+    <p class="apunte">Los datos del alumnado que veas solo pueden usarse para el proceso de selección.
+      <a href="{% url 'privacidad' %}" target="_blank">Información de protección de datos</a>.</p>
+    <button class="btn" type="submit">Registrar empresa</button>
+  </form>
+</div>
+{% endblock %}

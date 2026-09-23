@@ -1,0 +1,42 @@
+{% load static %}<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{% block titulo %}Prácticas en empresa{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+  {% if user.is_authenticated %}
+  <header class="barra">
+    <div class="barra-in">
+      <a class="marca" href="{% url 'inicio' %}">Prácticas en empresa<small>Formación en centros de trabajo</small></a>
+      <nav>
+        {% for texto, destino in menu %}
+          {% url destino as enlace %}
+          <a href="{{ enlace }}"{% if request.path == enlace %} aria-current="page"{% endif %}>{{ texto }}</a>
+        {% endfor %}
+      </nav>
+      <div class="usuario">
+        <span>{{ user.get_full_name|default:user.username }} · {{ user.get_rol_display }}</span>
+        <a href="{% url 'cuentas:cambiar_password' %}">Contraseña</a>
+        <form method="post" action="{% url 'cuentas:logout' %}">{% csrf_token %}<button type="submit">Salir</button></form>
+      </div>
+    </div>
+  </header>
+  {% endif %}
+  <main>
+    {% if messages %}
+    <ul class="mensajes">{% for m in messages %}<li class="{{ m.tags }}">{{ m }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% block contenido %}{% endblock %}
+  </main>
+  <footer class="pie">
+    <div class="pie-in">
+      <span>Aplicación interna de gestión de la FFE · {{ responsable.nombre }}</span>
+      <span><a href="{% url 'privacidad' %}">Protección de datos</a> · Datos personales tratados conforme al RGPD y la LOPDGDD</span>
+    </div>
+  </footer>
+</body>
+</html>

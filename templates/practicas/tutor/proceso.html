@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block contenido %}
+<div class="cabecera">
+  <div>
+    <h1>{{ proceso.empresa }}</h1>
+    <p class="sub">{{ proceso.puesto }} · {{ proceso.curso }} · lleva el proceso {{ proceso.tutor.nombre_completo }}
+      · <span class="estado {{ proceso.estado|lower }}">{{ proceso.get_estado_display }}</span></p>
+  </div>
+  <div class="acciones">
+    <a class="btn sec" href="{% url 'tutor:empresa' proceso.empresa.pk %}">Ficha de la empresa</a>
+    {% if gestiono %}<a class="btn sec" href="{% url 'tutor:editar_proceso' proceso.pk %}">Editar proceso</a>{% endif %}
+  </div>
+</div>
+
+{% if not gestiono %}<div class="banda">Este proceso lo lleva {{ proceso.tutor.nombre_completo }}. Puedes consultarlo, pero no modificarlo.</div>{% endif %}
+
+<div class="dos">
+  <div>
+    <h2>Candidatos</h2>
+    <div class="tabla-env"><table>
+      <thead><tr><th>Alumno</th><th>CV</th><th>Resultado</th><th>Condiciones</th>{% if gestiono %}<th></th>{% endif %}</tr></thead>
+      <tbody>
+      {% for p in participaciones %}
+        <tr>
+          <td><a href="{% url 'tutor:alumno' p.alumno.pk %}">{{ p.alumno.nombre_completo }}</a>
+            {% if p.origen == "EMPRESA" %}<br><span class="estado iniciado">Propuesto por la empresa</span>{% endif %}
+            <br><small class="apunte">{{ p.alumno.horas_pendientes }} h pendientes{% if p.alumno.jornada_preferida %} · {{ p.alumno.jornada_preferida_display }}{% endif %}</small>
+            {% if p.observaciones %}<br><small class="apunte">{{ p.observaciones }}</small>{% endif %}</td>
+          <td>{% if p.alumno.cv %}<a href="{% url 'cv' p.alumno.pk %}">Descargar</a>{% else %}—{% endif %}</td>
+          <td><span class="estado {{ p.resultado|lower }}">{{ p.get_resultado_display }}</span>{% if p.fecha_respuesta %}<br><small>{{ p.fecha_respuesta|date:"d/m/Y" }}</small>{% endif %}</td>
+          <td>{% if p.resultado == "SELECCIONADO" %}{% if p.condicion_inicio %}{{ p.condicion_inicio|date:"d/m/Y" }}{% if p.condicion_fin %} – {{ p.condicion_fin|date:"d/m/Y" }}{% endif %}{% endif %}
+              {% if p.condicion_horas %}<br><small>{{ p.condicion_horas }} h · {{ p.condicion_jornada }}</small>{% endif %}{% else %}—{% endif %}</td>
+          {% if gestiono %}<td style="white-space:nowrap">
+            <a class="btn sec peq" href="{% url 'tutor:participacion' proceso.pk p.pk %}">Resultado</a>
+            <form class="en-linea" method="post" action="{% url 'tutor:quitar_candidato' proceso.pk p.pk %}" onsubmit="return confirm('¿Quitar a {{ p.alumno.nombre_completo|escapejs }} del proceso?')">{% csrf_token %}<button class="btn peligro peq">Quitar</button></form>
+          </td>{% endif %}
+        </tr>
+      {% empty %}<tr><td colspan="{% if gestiono %}5{% else %}4{% endif %}" class="vacio">Todavía no hay candidatos en este proceso.</td></tr>{% endfor %}
+      </tbody>
+    </table></div>
+
+    {% if form_candidatos %}
+    <form method="post" action="{% url 'tutor:anadir_candidatos' proceso.pk %}" class="bloque" style="margin-top:.75rem">
+      {% csrf_token %}
+      <h3>Añadir candidatos de {{ proceso.curso }}</h3>
+      {% if form_candidatos.fields.alumnos.queryset %}
+        <div class="candidatos" style="columns:2;margin-bottom:.75rem">{{ form_candidatos.alumnos }}</div>
+        <button class="btn" type="submit">Añadir al proceso</button>
+      {% else %}
+        <p style="margin:0;color:var(--tinta-suave)">Todo el alumnado del curso ya participa en este proceso.</p>
+      {% endif %}
+    </form>
+    {% endif %}
+
+    <h2>Seguimiento del proceso</h2>
+    <div class="tabla-env"><table>
+      <thead><tr><th>Fecha y hora</th><th>Medio</th><th>Tutor</th><th>Observaciones</th></tr></thead>
+      <tbody>
+      {% for s in seguimientos %}
+        <tr><td style="white-space:nowrap">{{ s.fecha_hora|date:"d/m/Y H:i" }}</td><td>{{ s.get_medio_display }}</td><td>{{ s.tutor|default:"—" }}</td><td>{{ s.observaciones|linebreaksbr }}</td></tr>
+      {% empty %}<tr><td colspan="4" class="vacio">Sin actuaciones registradas en este proceso.</td></tr>{% endfor %}
+      </tbody>
+    </table></div>
+  </div>
+
+  <aside>
+    <section class="bloque">
+      <h3>Condiciones</h3>
+      <dl class="datos">
+        <dt>Plazas</dt><dd>{{ proceso.seleccionados }} de {{ proceso.plazas }} cubiertas</dd>
+        <dt>Inicio</dt><dd>{{ proceso.fecha_inicio|date:"d/m/Y"|default:"Sin fijar" }}</dd>
+        <dt>Fin</dt><dd>{{ proceso.fecha_fin|date:"d/m/Y"|default:"Sin fijar" }}</dd>
+        <dt>Horas</dt><dd>{{ proceso.horas|default:"Sin fijar" }}</dd>
+        <dt>Jornada</dt><dd>{{ proceso.get_jornada_display|default:"Sin fijar" }}</dd>
+        <dt>Tutor laboral</dt><dd>{{ proceso.tutor_laboral|default:"Sin asignar" }}</dd>
+      </dl>
+      {% if proceso.descripcion %}<p style="margin:1rem 0 0">{{ proceso.descripcion|linebreaksbr }}</p>{% endif %}
+    </section>
+
+    {% if gestiono %}
+    <section class="bloque" style="margin-top:1rem">
+      <h3>Estado del proceso</h3>
+      <form method="post" action="{% url 'tutor:estado_proceso' proceso.pk %}" style="display:flex;gap:.5rem;flex-wrap:wrap">
+        {% csrf_token %}
+        {% for valor, texto in estados %}{% if valor != proceso.estado %}<button class="btn sec peq" name="estado" value="{{ valor }}">{{ texto }}</button>{% endif %}{% endfor %}
+      </form>
+      <span class="helptext">Al cerrar se guarda la fecha; el alumnado ve entonces su resultado como definitivo.</span>
+    </section>
+
+    <section class="bloque" style="margin-top:1rem">
+      <h3>Registrar actuación</h3>
+      <form method="post" action="{% url 'tutor:seguimiento_proceso' proceso.pk proceso.empresa.pk %}">{% csrf_token %}{{ form_seguimiento }}<button class="btn" type="submit">Registrar</button></form>
+    </section>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block titulo %}Protección de datos{% endblock %}
+{% block contenido %}
+<div class="legal">
+  <h1>Información sobre el tratamiento de datos personales</h1>
+  <p class="sub">Reglamento (UE) 2016/679 (RGPD) y Ley Orgánica 3/2018 de Protección de Datos Personales y garantía de
+    los derechos digitales (LOPDGDD).</p>
+
+  <section class="bloque">
+    <dl class="datos">
+      <dt>Responsable</dt><dd>{{ responsable.nombre }}</dd>
+      <dt>Contacto</dt><dd><a href="mailto:{{ responsable.email }}">{{ responsable.email }}</a></dd>
+      <dt>Delegado de protección de datos</dt><dd><a href="mailto:{{ responsable.dpd }}">{{ responsable.dpd }}</a></dd>
+    </dl>
+  </section>
+
+  <h2>Con qué finalidad tratamos los datos</h2>
+  <p>Gestionar la formación en centros de trabajo del alumnado: matrícula en el curso, currículum, relación con las
+    empresas colaboradoras, procesos de selección y sus condiciones (fechas, horas y jornada), así como el
+    seguimiento que hace el profesorado de cada proceso.</p>
+
+  <h2>Base jurídica</h2>
+  <ul>
+    <li><strong>Alumnado:</strong> cumplimiento de una misión de interés público en el ámbito educativo (art. 6.1.e
+      RGPD), en el marco de la normativa de formación profesional.</li>
+    <li><strong>Empresas y sus tutores laborales:</strong> ejecución del convenio de colaboración con el centro
+      (art. 6.1.b RGPD).</li>
+    <li>El currículum lo aporta el propio alumnado de forma voluntaria; puede retirarlo en cualquier momento desde su
+      panel.</li>
+  </ul>
+
+  <h2>Qué datos tratamos</h2>
+  <ul>
+    <li>Identificación y contacto: DNI/NIE, nombre, apellidos, email y teléfono.</li>
+    <li>Académicos: centro, curso y tutor FFE.</li>
+    <li>Currículum en PDF aportado por el alumnado, y comentarios del tutor sobre él.</li>
+    <li>Participación en procesos de selección, resultado y condiciones de las prácticas.</li>
+    <li>Registro de quién descarga cada currículum, como medida de seguridad.</li>
+  </ul>
+  <p>No se tratan categorías especiales de datos (art. 9 RGPD) ni se toman decisiones automatizadas: la selección la
+    deciden la empresa y el tutor.</p>
+
+  <h2>Quién accede a los datos</h2>
+  <ul>
+    <li>El profesorado tutor de FFE del centro y el personal de administración autorizado.</li>
+    <li>Las empresas colaboradoras, únicamente respecto del alumnado que participa en sus procesos: nombre, curso y
+      currículum. Los datos de contacto solo si el tutor lo autoriza o si seleccionan al alumno.</li>
+  </ul>
+  <p>No se ceden datos a terceros salvo obligación legal, ni se realizan transferencias internacionales.</p>
+
+  <h2>Cuánto tiempo se conservan</h2>
+  <p>Mientras dure la relación académica y, después, {{ responsable.conservacion_anios }} años desde el fin del curso,
+    salvo que la normativa educativa o administrativa exija un plazo mayor. Transcurrido ese plazo los datos
+    identificativos se anonimizan y los currículums se eliminan.</p>
+
+  <h2>Derechos</h2>
+  <p>Puedes solicitar el acceso, la rectificación, la supresión, la limitación, la oposición y la portabilidad de tus
+    datos escribiendo a <a href="mailto:{{ responsable.dpd }}">{{ responsable.dpd }}</a>. El alumnado puede además
+    descargar toda su información desde su panel y borrar su currículum en cualquier momento.</p>
+  <p>Si consideras que el tratamiento no se ajusta a la normativa, puedes reclamar ante la Agencia Española de
+    Protección de Datos (<a href="https://www.aepd.es" rel="noopener" target="_blank">aepd.es</a>).</p>
+
+  <h2>Medidas de seguridad</h2>
+  <ul>
+    <li>Acceso con usuario y contraseña propios, con cambio obligatorio de la contraseña inicial.</li>
+    <li>Permisos por rol: cada persona ve únicamente los datos que necesita.</li>
+    <li>Los currículums se guardan fuera de las carpetas públicas del servidor y se sirven con control de acceso,
+      dejando registro de cada descarga.</li>
+    <li>Contraseñas almacenadas con funciones de hash y comunicación cifrada mediante HTTPS.</li>
+  </ul>
+  <p class="apunte">Última actualización de este texto: septiembre de 2026.</p>
+</div>
+{% endblock %}

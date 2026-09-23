@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>Hola, {{ alumno.nombre }}</h1>
+<p class="sub">{{ alumno.curso }} · {{ alumno.curso.centro.nombre }}</p>
+
+{% if practicas %}
+<section class="destacado ok">
+  <span class="estado seleccionado">Seleccionado</span>
+  <p class="titular">{{ practicas.proceso.empresa }}</p>
+  <dl class="datos">
+    <dt>Puesto</dt><dd>{{ practicas.proceso.puesto }}</dd>
+    {% if practicas.proceso.tutor_laboral %}<dt>Tutor laboral</dt><dd>{{ practicas.proceso.tutor_laboral.nombre }} · {{ practicas.proceso.tutor_laboral.telefono }}</dd>{% endif %}
+    <dt>Fechas</dt><dd>{% if practicas.condicion_inicio %}Del {{ practicas.condicion_inicio|date:"d/m/Y" }}{% if practicas.condicion_fin %} al {{ practicas.condicion_fin|date:"d/m/Y" }}{% endif %}{% else %}Por concretar{% endif %}</dd>
+    <dt>Horas</dt><dd>{{ practicas.condicion_horas|default:"Por concretar" }}</dd>
+    <dt>Jornada</dt><dd>{{ practicas.condicion_jornada|default:"Por concretar" }}</dd>
+    <dt>Dirección</dt><dd>{{ practicas.proceso.empresa.direccion }}</dd>
+  </dl>
+</section>
+{% else %}
+<section class="destacado">
+  <span class="estado pendiente">Sin plaza todavía</span>
+  <p class="titular">Aún no tienes empresa asignada</p>
+  <p style="margin:0">Tu tutor FFE te irá incluyendo en procesos de selección. Mantén tu currículum al día: es lo que ven las empresas.</p>
+</section>
+{% endif %}
+
+<h2>Procesos en marcha</h2>
+<div class="tabla-env"><table>
+  <thead><tr><th>Empresa</th><th>Puesto</th><th>Estado del proceso</th><th>Mi situación</th></tr></thead>
+  <tbody>
+  {% for p in abiertos %}
+    <tr><td>{{ p.proceso.empresa }}</td><td>{{ p.proceso.puesto }}</td>
+      <td><span class="estado {{ p.proceso.estado|lower }}">{{ p.proceso.get_estado_display }}</span></td>
+      <td><span class="estado {{ p.resultado|lower }}">{{ p.get_resultado_display }}</span></td></tr>
+  {% empty %}<tr><td colspan="4" class="vacio">No participas en ningún proceso abierto.</td></tr>{% endfor %}
+  </tbody>
+</table></div>
+
+{% if cerrados %}
+<h2>Procesos cerrados</h2>
+<div class="tabla-env"><table>
+  <thead><tr><th>Empresa</th><th>Puesto</th><th>Resultado</th><th>Condiciones</th></tr></thead>
+  <tbody>
+  {% for p in cerrados %}
+    <tr><td>{{ p.proceso.empresa }}</td><td>{{ p.proceso.puesto }}</td>
+      <td><span class="estado {{ p.resultado|lower }}">{{ p.get_resultado_display }}</span>{% if p.fecha_respuesta %}<br><small>{{ p.fecha_respuesta|date:"d/m/Y" }}</small>{% endif %}</td>
+      <td>{% if p.resultado == "SELECCIONADO" %}{% if p.condicion_inicio %}{{ p.condicion_inicio|date:"d/m/Y" }}{% if p.condicion_fin %} – {{ p.condicion_fin|date:"d/m/Y" }}{% endif %}<br>{% endif %}
+        <small>{{ p.condicion_horas|default:"—" }} h · {{ p.condicion_jornada|default:"jornada por concretar" }}</small>{% else %}—{% endif %}</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% endif %}
+
+<div class="rejilla" style="margin-top:2rem">
+  <section class="bloque">
+    <h3>Mi tutor FFE</h3>
+    <dl class="datos"><dt>Nombre</dt><dd>{{ tutor.nombre_completo }}</dd><dt>Email</dt><dd><a href="mailto:{{ tutor.email }}">{{ tutor.email }}</a></dd>
+      {% if tutor.telefono %}<dt>Teléfono</dt><dd>{{ tutor.telefono }}</dd>{% endif %}</dl>
+  </section>
+  <section class="bloque">
+    <h3>Datos de contacto</h3>
+    <dl class="datos"><dt>DNI</dt><dd>{{ alumno.dni }}</dd><dt>Email</dt><dd>{{ alumno.email }}</dd>
+      <dt>Teléfono</dt><dd>{{ alumno.telefono|default:"—" }}</dd>
+      <dt>Horas</dt><dd>{{ alumno.horas_pendientes }} h pendientes de {{ alumno.horas_requeridas }} h</dd>
+      <dt>Jornada</dt><dd>{{ alumno.jornada_preferida_display|default:"Sin indicar" }}</dd>
+      <dt>Disponibilidad</dt><dd>{{ alumno.disponibilidad|default:"Sin indicar" }}</dd></dl>
+    <div class="acciones" style="margin-top:1rem">
+      <a class="btn sec" href="{% url 'alumno:perfil' %}">Actualizar datos</a>
+      <a class="btn sec" href="{% url 'cuentas:cambiar_password' %}">Cambiar contraseña</a>
+    </div>
+  </section>
+  <section class="bloque">
+    <h3>Currículum</h3>
+    {% if alumno.cv %}
+      <p style="margin:0 0 1rem">Subido el {{ alumno.cv_actualizado|date:"d/m/Y" }} ·
+        <a href="{% url 'cv' alumno.pk %}">Ver mi CV</a></p>
+    {% else %}
+      <p class="apunte" style="margin:0 0 1rem">Todavía no has subido tu currículum. Es lo que ven las empresas.</p>
+    {% endif %}
+    <form method="post" action="{% url 'alumno:cv' %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="campo">
+        <label for="{{ form_cv.cv.id_for_label }}">{% if alumno.cv %}Sustituir por otro PDF{% else %}Elige tu PDF{% endif %}</label>
+        {{ form_cv.cv }}
+        <span class="helptext">PDF, máximo 5 MB.</span>
+      </div>
+      <button class="btn" type="submit">{% if alumno.cv %}Sustituir currículum{% else %}Subir currículum{% endif %}</button>
+    </form>
+    {% if alumno.cv %}
+    <form method="post" action="{% url 'alumno:borrar_cv' %}" style="margin-top:.75rem" onsubmit="return confirm('¿Eliminar tu currículum? Las empresas dejarán de verlo.')">
+      {% csrf_token %}<button class="btn peligro peq" type="submit">Eliminar mi currículum</button>
+    </form>
+    {% endif %}
+  </section>
+</div>
+
+{% if comentarios %}
+<h2>Comentarios de tu tutor sobre tu currículum</h2>
+<section class="bloque">
+  {% for c in comentarios %}
+    <div class="comentario">
+      <p style="margin:0 0 .25rem">{{ c.texto|linebreaksbr }}</p>
+      <div class="meta">{{ c.tutor|default:"Tu tutor" }} · {{ c.fecha|date:"d/m/Y" }}</div>
+    </div>
+  {% endfor %}
+</section>
+{% endif %}
+
+<h2>Tus datos</h2>
+<section class="bloque">
+  <p style="margin:0 0 1rem">Tratamos tus datos para gestionar tus prácticas. Puedes descargar todo lo que guardamos
+    sobre ti, incluido quién ha descargado tu currículum.</p>
+  <div class="acciones">
+    <a class="btn sec" href="{% url 'alumno:mis_datos' %}">Descargar mis datos (JSON)</a>
+    <a class="btn sec" href="{% url 'privacidad' %}">Cómo tratamos tus datos</a>
+  </div>
+</section>
+{% endblock %}
